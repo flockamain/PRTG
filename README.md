@@ -8,6 +8,7 @@ Asks for a device name (can be typed in not case-sensitive)
 whatever is type in just has to be somewhere in the device name
 
 Looks for the device - allows pagination after 2500 results because API limits to 2500 per request
+
 If a single device is found, ask for deletion.
 If more devices/no devices are found, state deletion is not allowed
 
