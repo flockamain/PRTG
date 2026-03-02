@@ -64,6 +64,30 @@ def get_all_devices(username, password):
 
     return all_devices
 
+def delete_device(username, password, objid, device_name):
+    """Delete a device by its object ID"""
+    # only allow delete if exactly one match was found
+    confirm = input(f"\n⚠️  You are about to delete: {device_name} (ID: {objid})\nType 'YES I WANT TO DELETE THIS SINGLE NODE' to confirm: ").strip()
+    
+    if confirm != "YES I WANT TO DELETE THIS SINGLE NODE":
+        print("❌ Confirmation did not match. Delete cancelled.")
+        return
+
+    url = f"{PRTG_SERVER}/api/deleteobject.htm"
+    params = {
+        'id': objid,
+        'approve': 1,
+        'username': username,
+        'password': password
+    }
+    try:
+        response = requests.get(url, params=params, verify=False)
+        response.raise_for_status()
+        print(f"✅ Successfully deleted: {device_name} (ID: {objid})")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Failed to delete device:")
+        print(e)
+
 def search_devices(username, password):
     search_term = input("🔍 Enter the string to search for in device names: ").strip().lower()
     if not search_term:
@@ -77,6 +101,17 @@ def search_devices(username, password):
         print(f"\n✅ Found {len(matches)} device(s) containing '{search_term}':")
         for device in matches:
             print(f"- {device['device']} (ID: {device['objid']})")
+
+        # only offer delete if exactly one device was found
+        if len(matches) == 1:
+            device = matches[0]
+            delete_choice = input(f"\nWould you like to delete '{device['device']}'? (yes/no): ").strip().lower()
+            if delete_choice == 'yes':
+                delete_device(username, password, device['objid'], device['device'])
+            else:
+                print("Delete skipped.")
+        else:
+            print("\n⚠️  Multiple devices found — refine your search to a single result before deleting.")
     else:
         print(f"❌ No devices found containing '{search_term}'.")
 
